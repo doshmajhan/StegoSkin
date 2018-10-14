@@ -1,0 +1,16 @@
+[
+{
+  "modid": "stegskin",
+  "name": "StegSkin",
+  "description": "Covertly communicate with your skin!",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Brandon Dossantos", "Brandon Adler", "Cameron Clark"],
+  "credits": "RIT",
+  "logoFile": "assets/stegskin/stegskin_logo.png",
+  "screenshots": [],
+  "dependencies": []
+}
+]
