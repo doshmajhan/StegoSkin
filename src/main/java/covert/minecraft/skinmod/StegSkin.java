@@ -1,16 +1,23 @@
 package covert.minecraft.skinmod;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.entity.EntityOtherPlayerMP;
 import net.minecraft.client.renderer.ThreadDownloadImageData;
 import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.renderer.texture.SimpleTexture;
+import net.minecraft.client.renderer.texture.TextureUtil;
+import net.minecraft.client.renderer.tileentity.TileEntitySkullRenderer;
+import net.minecraft.client.resources.IResource;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.datafix.fixes.EntityId;
+import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
@@ -34,6 +41,7 @@ public class StegSkin {
     public static final String modId = "stegskin";
     public static final String name = "StegSkin";
     public static final String version = "1.12.2";
+    public final String IMAGE_PATH = "/home/doshmajhan/StegoSkin/skin.png";
 
     @Mod.Instance(modId)
     public static StegSkin instance;
@@ -57,19 +65,20 @@ public class StegSkin {
     public void onTick(TickEvent.PlayerTickEvent event){
         List nearbyPlayers = new ArrayList();
         Minecraft minecraft = Minecraft.getMinecraft();
+
         if (minecraft.player != null){
-            List<EntityPlayer> entitiesNearby = Minecraft.getMinecraft().player.world.playerEntities;
-            if (Minecraft.getMinecraft().player.world.playerEntities.size() > 1){
-                for (int x = 1; x < Minecraft.getMinecraft().player.world.playerEntities.size(); x++){
+            List<EntityPlayer> entitiesNearby = minecraft.player.world.playerEntities;
+            if (entitiesNearby.size() > 1){
+                for (int x = 1; x < entitiesNearby.size(); x++){
                     nearbyPlayers.add(entitiesNearby.get(x));
                 }
                 EntityOtherPlayerMP dosh = (EntityOtherPlayerMP)nearbyPlayers.get(0);
-                ResourceLocation skin = new ResourceLocation(dosh.getLocationSkin().toString());
+                ResourceLocation skin = dosh.getLocationSkin();
                 ThreadDownloadImageData data = (ThreadDownloadImageData)minecraft.getTextureManager().getTexture(skin);
 
                 try{
-                    BufferedImage image = ReflectionHelper.getPrivateValue(ThreadDownloadImageData.class, data, "bufferedImage", "field_110560_d");
-                    ImageIO.write(image, "png", new File("D://Documents/image.png"));
+                    BufferedImage image = ObfuscationReflectionHelper.getPrivateValue(ThreadDownloadImageData.class, data, "field_110560_d", "bufferedImage");
+                    ImageIO.write(image, "png", new File(IMAGE_PATH));
                 } catch (java.io.IOException e){
                     System.out.println(e.getMessage());
                 }
@@ -77,6 +86,28 @@ public class StegSkin {
                 //FMLLog.getLogger().log(Level.INFO, dosh.getSkinType());
             }
         }
+
+
+    }
+
+    @SubscribeEvent
+    public void onPlayerRender(RenderPlayerEvent.Post event){
+        Minecraft minecraft = Minecraft.getMinecraft();
+        AbstractClientPlayer dosh = (AbstractClientPlayer)event.getEntityPlayer();
+
+        ResourceLocation skin = dosh.getLocationSkin();
+        FMLLog.getLogger().log(Level.INFO, skin.toString());
+
+        //SimpleTexture text = (SimpleTexture)minecraft.getTextureManager().getTexture(skin);
+        try{
+            IResource resource = minecraft.getResourceManager().getResource(skin);
+            //BufferedImage image = ObfuscationReflectionHelper.getPrivateValue(ThreadDownloadImageData.class, data, "field_110560_d", "bufferedImage");
+            BufferedImage image = TextureUtil.readBufferedImage(resource.getInputStream());
+            ImageIO.write(image, "png", new File(IMAGE_PATH));
+        } catch (java.io.IOException e){
+            System.out.println(e.getMessage());
+        }
+        FMLLog.getLogger().log(Level.INFO, dosh.getLocationSkin());
 
     }
 
