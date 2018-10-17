@@ -51,8 +51,6 @@ public class StegSkin {
     public static final String modId = "stegskin";
     public static final String name = "StegSkin";
     public static final String version = "1.12.2";
-    public final String IMAGE_PATH = "/home/dosh/StegoSkin/skin.png";
-    public final String SKINS_URL = "http://skins.minecraft.net/MinecraftSkins/%s.png";
 
     @Mod.Instance(modId)
     public static StegSkin instance;
@@ -71,35 +69,6 @@ public class StegSkin {
     public void postInit(FMLPostInitializationEvent event) {
 
     }
-
-    /*@SubscribeEvent
-    public void onTick(TickEvent.PlayerTickEvent event){
-        List nearbyPlayers = new ArrayList();
-        Minecraft minecraft = Minecraft.getMinecraft();
-
-        if (minecraft.player != null){
-            List<EntityPlayer> entitiesNearby = minecraft.player.world.playerEntities;
-            if (entitiesNearby.size() > 1){
-                for (int x = 1; x < entitiesNearby.size(); x++){
-                    nearbyPlayers.add(entitiesNearby.get(x));
-                }
-                EntityOtherPlayerMP dosh = (EntityOtherPlayerMP)nearbyPlayers.get(0);
-                ResourceLocation skin = dosh.getLocationSkin();
-                ThreadDownloadImageData data = (ThreadDownloadImageData)minecraft.getTextureManager().getTexture(skin);
-
-                try{
-                    BufferedImage image = ObfuscationReflectionHelper.getPrivateValue(ThreadDownloadImageData.class, data, "field_110560_d", "bufferedImage");
-                    ImageIO.write(image, "png", new File(IMAGE_PATH));
-                } catch (java.io.IOException e){
-                    System.out.println(e.getMessage());
-                }
-                //FMLLog.getLogger().log(Level.INFO, dosh.getLocationSkin());
-                //FMLLog.getLogger().log(Level.INFO, dosh.getSkinType());
-            }
-        }
-
-
-    }*/
 
     @SubscribeEvent
     public void onPlayerRender(RenderPlayerEvent.Post event){
