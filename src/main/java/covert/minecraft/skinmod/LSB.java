@@ -1,4 +1,4 @@
-package com.company;
+package covert.minecraft.skinmod;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -6,10 +6,9 @@ import java.awt.image.*;
 import java.io.*;
 import java.util.ArrayList;
 
-public class LSBv2 {
+public class LSB {
 
     private static final String ENCODED_IMAGE = "encoded.png";
-    private static final String DECODED_MESSAGE_FILE = "decoded.txt";
 
     public static void storeMessage(String imageSource, String message_file) {
         String message = readFile(message_file);
@@ -75,9 +74,10 @@ public class LSBv2 {
      * of each Red, Green, Blue, and Alpha component of each pixel starting at the
      * top left of the picture. The retrieval process stops once the end block, which is
      * "11111111" is encountered. The message is then saved to a text file.
-     * @param encodedImage     The input image as a BufferedImage
+     * @param encodedImage      The input image as a BufferedImage
+     * @param messageOutputPath The path to save the message to
      */
-    public static void retrieveMessageFromImage(String encodedImage) {
+    public static void retrieveMessageFromImage(String encodedImage, String messageOutputPath) {
         File file = new File(encodedImage);
         BufferedImage image;
         try {
@@ -100,16 +100,16 @@ public class LSBv2 {
 
                 String block = retrieveLastBinaryPair(rgba);
 
-                if (block.equals("11111111")) {
+                if (block.equals("111111")) {
                     break outer;
                 } else {
-                    int charCode = Integer.parseInt(block, 2);
-                    retrievedMessage += Character.toString((char) charCode);
+                    //int charCode = Integer.parseInt(block, 2);
+                    retrievedMessage += block;
                 }
             }
         }
 
-        saveText(retrievedMessage);
+        saveText(retrievedMessage, messageOutputPath);
     }
 
     /**
@@ -121,8 +121,10 @@ public class LSBv2 {
     private static String retrieveLastBinaryPair(ArrayList<String> rgba) {
         String out = "";
 
-        for (String e : rgba)
-            out += e.substring(6);
+        for(int i = 0; i < rgba.size() - 1; i++){
+            out += rgba.get(i).substring(6);
+        }
+        System.out.println("Decoded: " + out);
 
         return out;
     }
@@ -144,14 +146,14 @@ public class LSBv2 {
         for (int row = 0; row < image.getHeight(); row++) {
             for (int column = 0; column < image.getWidth(); column++) {
 
-                int start = row * image.getWidth() + column * 8;
-                int end = start + 8;
+                int start = row * image.getWidth() + column * 6;
+                int end = start + 6;
 
                 String messageBlock;
                 if (end < binaryMessage.length()) {
                     messageBlock = binaryMessage.substring(start, end);
                 } else {
-                    messageBlock = "11111111";
+                    messageBlock = "111111";
                     endBlockAppended = true;
                 }
 
@@ -161,8 +163,10 @@ public class LSBv2 {
                 ArrayList<String> rgbaOld = getColorBinaries(oldColor);
                 ArrayList<String> rgbaNew = new ArrayList<>();
 
-                for (int i = 0; i < rgbaOld.size(); i++)
+                for (int i = 0; i < rgbaOld.size() - 1; i++) {
                     rgbaNew.add(rgbaOld.get(i).substring(0, 6) + messageBlock.substring(i * 2, (i + 1) * 2));
+                }
+                rgbaNew.add(rgbaOld.get(rgbaOld.size() - 1));
 
                 ArrayList<Integer> newColorComponents = rgbaToInt(rgbaNew);
                 newColorComponents = checkMaxValuesOfComponents(newColorComponents);
@@ -239,11 +243,12 @@ public class LSBv2 {
 
     /**
      * Saves a String to a .txt file at the location of this program.
-     * @param text      The String to be saved.
+     * @param text              The String to be saved.
+     * @param messageOutputPath The path to save the message at
      */
-    private static void saveText(String text) {
+    private static void saveText(String text, String messageOutputPath) {
         try {
-            File output = new File(DECODED_MESSAGE_FILE);
+            File output = new File(messageOutputPath);
             FileOutputStream fos = new FileOutputStream(output);
 
             byte[] contentInBytes = text.getBytes();
