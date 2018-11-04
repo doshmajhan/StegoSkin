@@ -10,5 +10,6 @@ public class MainTest {
         System.out.println("Decoding message");
         LSB.retrieveMessageFromImage();
         System.out.println("Done");
+
     }
 }

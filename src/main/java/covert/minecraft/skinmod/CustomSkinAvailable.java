@@ -6,6 +6,8 @@ import net.minecraft.client.renderer.ThreadDownloadImageData;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.SkinManager;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -58,7 +60,10 @@ public class CustomSkinAvailable implements SkinManager.SkinAvailableCallback{
         String message = LSB.retrieveMessageFromImage();
         System.out.printf("Message received: %s %n", message);
         System.out.println("Done");
-        minecraft.player.sendChatMessage("Message received from " + this.playerName + " : " + message);
+
+        minecraft.player.sendMessage(
+                new TextComponentString("Message received from " + this.playerName + " : " + message));
+
         StegSkin.BEEN_READ = true;
     }
 }

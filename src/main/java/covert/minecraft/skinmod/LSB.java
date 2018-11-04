@@ -4,6 +4,7 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.*;
 import java.io.*;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class LSB {
@@ -12,7 +13,8 @@ public class LSB {
     private static final String SKIN_PATH = "../skin.png";
     private static final String DECODE_OUTPUT = "../decoded.txt";
     private static final String MESSAGE_PATH = "../message.txt";
-    private static final int MAX_MESSAGE_SIZE = 250;
+    private static final int MAX_MESSAGE_SIZE = 350;
+    private static final String END_CHUNK_FLAG = "111111";
 
     public static void storeMessage() {
         String message = readFile(MESSAGE_PATH);
@@ -86,6 +88,7 @@ public class LSB {
     public static String retrieveMessageFromImage() {
         File file = new File(ENCODED_IMAGE);
         BufferedImage image;
+
         try {
             image = ImageIO.read(file);
         }
@@ -102,11 +105,15 @@ public class LSB {
                 int rgb = image.getRGB(column, row);
                 Color color = new Color(rgb, true);
 
+                // Nothing was written to this pixel cuz it had a 0 for alpha so skip
+                if (color.getAlpha() == 0) {
+                    continue ;
+                }
                 ArrayList<String> rgba = getColorBinaries(color);
 
                 String block = retrieveLastBinaryPair(rgba);
 
-                if (block.equals("111111")) {
+                if (block.equals(END_CHUNK_FLAG)) {
                     break outer;
                 } else {
                     retrievedMessage += block;
@@ -145,26 +152,28 @@ public class LSB {
      * @param image             The image as BufferedImage to which the message is added.
      */
     private static void addMessageToImage(String secretMessage, BufferedImage image) {
-        String binaryMessage = convertStringToBinary(secretMessage);
-        boolean endBlockAppended = false;
+        ArrayList<String> binaryChunks = convertStringToSixBitChunks(secretMessage);
+        int count = 0;
 
         outer:
         for (int row = 0; row < image.getHeight(); row++) {
             for (int column = 0; column < image.getWidth(); column++) {
 
-                int start = row * image.getWidth() + column * 6;
-                int end = start + 6;
-
-                String messageBlock;
-                if (end < binaryMessage.length()) {
-                    messageBlock = binaryMessage.substring(start, end);
-                } else {
-                    messageBlock = "111111";
-                    endBlockAppended = true;
-                }
-
                 int rgb = image.getRGB(column, row);
                 Color oldColor = new Color(rgb, true);
+
+                // If we write to anything that has a 0 for alpha channel, minecraft will overwrite it
+                if (oldColor.getAlpha() == 0) {
+                    continue;
+
+                }
+
+                // We have stored all the data
+                if (count == binaryChunks.size()){
+                    break outer;
+                }
+                String messageBlock = binaryChunks.get(count);
+                count ++;
 
                 ArrayList<String> rgbaOld = getColorBinaries(oldColor);
                 ArrayList<String> rgbaNew = new ArrayList<>();
@@ -179,14 +188,35 @@ public class LSB {
                 ArrayList<Integer> newColorComponents = rgbaToInt(rgbaNew);
                 newColorComponents = checkMaxValuesOfComponents(newColorComponents);
 
-                Color newColor = new Color(newColorComponents.get(0), newColorComponents.get(1), newColorComponents.get(2), newColorComponents.get(3));
-                image.setRGB(column, row, newColor.getRGB());
+                Color newColor = new Color(
+                        newColorComponents.get(0),
+                        newColorComponents.get(1),
+                        newColorComponents.get(2),
+                        newColorComponents.get(3));
 
-                if (endBlockAppended)
-                    break outer;
+                image.setRGB(column, row, newColor.getRGB());
             }
         }
         saveImage(image);
+    }
+
+
+    private static void readImage(BufferedImage image) {
+
+        int count = 0;
+        for (int row = 0; row < image.getHeight(); row++) {
+            for (int column = 0; column < image.getWidth(); column++) {
+
+
+                int rgb = image.getRGB(column, row);
+                Color oldColor = new Color(rgb, true);
+                if (oldColor.getAlpha() == 0 ){
+                    continue;
+                }
+                count += 1;
+            }
+        }
+        System.out.println(count/6);
     }
 
     /**
@@ -275,20 +305,39 @@ public class LSB {
     }
 
     /**
-     * Converts a String of Characters to a String of their values as Binaries.
+     * Converts a String of Characters to a array of 6 bit binary chunks
      * @param input     The String to be converted.
-     * @return          A String containing the binary values of the input characters.
+     * @return          An array of 6 bit chunks of the original string
      */
-    private static String convertStringToBinary(String input) {
-        String out = "";
+    private static ArrayList<String> convertStringToSixBitChunks(String input) {
+        int index = 0;
+        String binary = "";
+        ArrayList<String> chunks = new ArrayList<String>();
 
+        // Convert whole string to binary digits
         char[] charMessage = input.toCharArray();
         for (char c : charMessage){
             String temp = Integer.toBinaryString(c);
-            out += fillString(temp);
+            binary += fillString(temp);
         }
 
-        return out;
+        // Go through and split up into 6 bit chunks so we can write to the RGB channel easier
+        while (index < binary.length()) {
+            String chunk = binary.substring(index, Math.min(index + 6, binary.length()));
+
+            // If the chunk comes out smaller than 6 just pad with 0's
+            if(chunk.length() < 6) {
+                while (chunk.length() < 6) {
+                    chunk += "0";
+                }
+            }
+            chunks.add(chunk);
+            index += 6;
+        }
+
+        // Finish off with our flag for the end chunk
+        chunks.add(END_CHUNK_FLAG);
+        return chunks;
     }
 
     /**
@@ -322,8 +371,8 @@ public class LSB {
      */
     private static String convertBinaryToAscii(String binary){
         String ascii = "";
-
         int index = 0;
+
         while (index < binary.length()) {
             String bite = binary.substring(index, Math.min(index + 8, binary.length()));
             int charCode = Integer.parseInt(bite, 2);
