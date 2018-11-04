@@ -14,8 +14,6 @@ import java.io.*;
 
 public class CustomSkinAvailable implements SkinManager.SkinAvailableCallback{
 
-    private final String IMAGE_PATH = "/home/dosh/StegoSkin/skin.png";
-    private static final String DECODE_OUTPUT = "/home/dosh/StegoSkin/decoded.txt";
     
     public CustomSkinAvailable(){}
 
@@ -37,7 +35,7 @@ public class CustomSkinAvailable implements SkinManager.SkinAvailableCallback{
                     "bufferedImage",
                     "field_110560_d");
 
-            ImageIO.write(image, "png", new File(IMAGE_PATH));
+            ImageIO.write(image, "png", new File(LSB.IMAGE_PATH));
         }
         catch (Exception e){
             System.out.printf("Error loading skin for: %s %n", location);
@@ -47,10 +45,10 @@ public class CustomSkinAvailable implements SkinManager.SkinAvailableCallback{
             }
         }
 
-        System.out.printf("Loaded skin to %s %n", IMAGE_PATH);
-
+        System.out.printf("Loaded skin to %s %n", LSB.IMAGE_PATH);
         System.out.println("Decoding");
-        LSB.retrieveMessageFromImage(IMAGE_PATH, DECODE_OUTPUT);
+        String message = LSB.retrieveMessageFromImage();
+        System.out.println("Message received: " + message);
         System.out.println("Done");
     }
 }

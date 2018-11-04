@@ -8,11 +8,15 @@ import java.util.ArrayList;
 
 public class LSB {
 
-    private static final String ENCODED_IMAGE = "encoded.png";
+    public static final String IMAGE_PATH = "../skin.png";
+    private static final String ORIG_SKIN = "../orig_skin.png";
+    private static final String ENCODED_IMAGE = "../encoded.png";
+    private static final String DECODE_OUTPUT = "../decoded.txt";
+    private static final String MESSAGE_PATH = "../message.txt";
 
-    public static void storeMessage(String imageSource, String message_file) {
-        String message = readFile(message_file);
-        BufferedImage image = loadImage(imageSource);
+    public static void storeMessage() {
+        String message = readFile(MESSAGE_PATH);
+        BufferedImage image = loadImage(ORIG_SKIN);
         addMessageToImage(message, image);
     }
 
@@ -71,21 +75,19 @@ public class LSB {
 
     /**
      * Retrieves a message from a given input image by collecting the last 2 bits
-     * of each Red, Green, Blue, and Alpha component of each pixel starting at the
+     * of each Red, Green and Blue component of each pixel starting at the
      * top left of the picture. The retrieval process stops once the end block, which is
-     * "11111111" is encountered. The message is then saved to a text file.
-     * @param encodedImage      The input image as a BufferedImage
-     * @param messageOutputPath The path to save the message to
+     * "111111" is encountered. The message is then saved to a text file.
      */
-    public static void retrieveMessageFromImage(String encodedImage, String messageOutputPath) {
-        File file = new File(encodedImage);
+    public static String retrieveMessageFromImage() {
+        File file = new File(ENCODED_IMAGE);
         BufferedImage image;
         try {
             image = ImageIO.read(file);
         }
         catch (IOException ex){
             System.out.println(ex.getMessage());
-            return;
+            return "";
         }
 
         String retrievedMessage = "";
@@ -103,19 +105,19 @@ public class LSB {
                 if (block.equals("111111")) {
                     break outer;
                 } else {
-                    //int charCode = Integer.parseInt(block, 2);
                     retrievedMessage += block;
                 }
             }
         }
 
-        saveText(retrievedMessage, messageOutputPath);
+        saveText(retrievedMessage);
+        return retrievedMessage;
     }
 
     /**
-     * Retrieves the last 2 bits of the Red, Green, Blue, and Alpha channel of a
+     * Retrieves the last 2 bits of the Red, Green, and Blue channel of a
      * given ArrayList containing the values for these channels as a binary String.
-     * @param rgba      The binary strings of the Red, Green, Glue, and Alpha channels of a pixel
+     * @param rgba      The binary strings of the Red, Green, and Blue channels of a pixel
      * @return          A concatenation of all last 2 bits of the binary strings.
      */
     private static String retrieveLastBinaryPair(ArrayList<String> rgba) {
@@ -124,17 +126,16 @@ public class LSB {
         for(int i = 0; i < rgba.size() - 1; i++){
             out += rgba.get(i).substring(6);
         }
-        System.out.println("Decoded: " + out);
 
         return out;
     }
 
     /**
      * The main method to add a message to an image. It runs through every pixel starting
-     * at the top left and adds a character represented by 8 bits to the 4 color channels
-     * (Red, Green, Blue, Alpha) of the pixel. It replaces the last 2 bits of the binary value
+     * at the top left and adds a character represented by 8 bits to the 3 color channels
+     * (Red, Green, Blue) of the pixel. It replaces the last 2 bits of the binary value
      * for each channel by 2 bits of the character binaries. The adding process is finished
-     * by adding an end block of "11111111" to a pixel.
+     * by adding an end block of "111111" to a pixel.
      * @param secretMessage     The message to add to the image.
      * @param image             The image as BufferedImage to which the message is added.
      */
@@ -163,9 +164,11 @@ public class LSB {
                 ArrayList<String> rgbaOld = getColorBinaries(oldColor);
                 ArrayList<String> rgbaNew = new ArrayList<>();
 
+                // - 1 on size because we don't want to include the last entry which is the alpha channel
                 for (int i = 0; i < rgbaOld.size() - 1; i++) {
                     rgbaNew.add(rgbaOld.get(i).substring(0, 6) + messageBlock.substring(i * 2, (i + 1) * 2));
                 }
+                // Add the alpha channel back in because we need it to create the image correctly
                 rgbaNew.add(rgbaOld.get(rgbaOld.size() - 1));
 
                 ArrayList<Integer> newColorComponents = rgbaToInt(rgbaNew);
@@ -244,11 +247,10 @@ public class LSB {
     /**
      * Saves a String to a .txt file at the location of this program.
      * @param text              The String to be saved.
-     * @param messageOutputPath The path to save the message at
      */
-    private static void saveText(String text, String messageOutputPath) {
+    private static void saveText(String text) {
         try {
-            File output = new File(messageOutputPath);
+            File output = new File(DECODE_OUTPUT);
             FileOutputStream fos = new FileOutputStream(output);
 
             byte[] contentInBytes = text.getBytes();
