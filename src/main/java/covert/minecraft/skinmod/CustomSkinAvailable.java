@@ -14,8 +14,11 @@ import java.io.*;
 
 public class CustomSkinAvailable implements SkinManager.SkinAvailableCallback{
 
-    
-    public CustomSkinAvailable(){}
+    private String playerName;
+
+    public CustomSkinAvailable(String playerName){
+        this.playerName = playerName;
+    }
 
     public void skinAvailable(MinecraftProfileTexture.Type typeIn,
                        ResourceLocation location,
@@ -35,7 +38,11 @@ public class CustomSkinAvailable implements SkinManager.SkinAvailableCallback{
                     "bufferedImage",
                     "field_110560_d");
 
-            ImageIO.write(image, "png", new File(LSB.IMAGE_PATH));
+            if (image == null) {
+                throw new Exception("skin is null");
+            }
+
+            ImageIO.write(image, "png", new File(LSB.ENCODED_IMAGE));
         }
         catch (Exception e){
             System.out.printf("Error loading skin for: %s %n", location);
@@ -43,12 +50,15 @@ public class CustomSkinAvailable implements SkinManager.SkinAvailableCallback{
             for (StackTraceElement el : e.getStackTrace()) {
                 System.out.println(el);
             }
+            return;
         }
 
-        System.out.printf("Loaded skin to %s %n", LSB.IMAGE_PATH);
+        System.out.printf("Loaded skin to %s %n", LSB.ENCODED_IMAGE);
         System.out.println("Decoding");
         String message = LSB.retrieveMessageFromImage();
-        System.out.println("Message received: " + message);
+        System.out.printf("Message received: %s %n", message);
         System.out.println("Done");
+        minecraft.player.sendChatMessage("Message received from " + this.playerName + " : " + message);
+        StegSkin.BEEN_READ = true;
     }
 }

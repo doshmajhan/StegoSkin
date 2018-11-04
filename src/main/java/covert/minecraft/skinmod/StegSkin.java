@@ -51,6 +51,7 @@ public class StegSkin {
     public static final String modId = "stegskin";
     public static final String name = "StegSkin";
     public static final String version = "1.12.2";
+    public static boolean BEEN_READ = false;
 
     @Mod.Instance(modId)
     public static StegSkin instance;
@@ -72,6 +73,10 @@ public class StegSkin {
 
     @SubscribeEvent
     public void onPlayerRender(RenderPlayerEvent.Post event){
+        if (BEEN_READ) {
+            return;
+        }
+
         Minecraft minecraft = Minecraft.getMinecraft();
         SkinManager skinManager = minecraft.getSkinManager();
 
@@ -80,7 +85,7 @@ public class StegSkin {
 
 
         // This is a function that will be called once the skin has been downloaded and cached
-        CustomSkinAvailable callback = new CustomSkinAvailable();
+        CustomSkinAvailable callback = new CustomSkinAvailable(event.getEntityPlayer().getName());
 
         // Force the skin manager to load the skins for this profile
         skinManager.loadProfileTextures(profile, callback, false);

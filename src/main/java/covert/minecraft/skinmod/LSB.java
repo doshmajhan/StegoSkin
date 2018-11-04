@@ -8,15 +8,19 @@ import java.util.ArrayList;
 
 public class LSB {
 
-    public static final String IMAGE_PATH = "../skin.png";
-    private static final String ORIG_SKIN = "../orig_skin.png";
-    private static final String ENCODED_IMAGE = "../encoded.png";
+    public static final String ENCODED_IMAGE = "../encoded.png";
+    private static final String SKIN_PATH = "../skin.png";
     private static final String DECODE_OUTPUT = "../decoded.txt";
     private static final String MESSAGE_PATH = "../message.txt";
+    private static final int MAX_MESSAGE_SIZE = 250;
 
     public static void storeMessage() {
         String message = readFile(MESSAGE_PATH);
-        BufferedImage image = loadImage(ORIG_SKIN);
+        if (message.length() > MAX_MESSAGE_SIZE) {
+            System.out.println("Message is too big");
+            return;
+        }
+        BufferedImage image = loadImage(SKIN_PATH);
         addMessageToImage(message, image);
     }
 
@@ -110,6 +114,7 @@ public class LSB {
             }
         }
 
+        retrievedMessage = convertBinaryToAscii(retrievedMessage);
         saveText(retrievedMessage);
         return retrievedMessage;
     }
@@ -181,7 +186,6 @@ public class LSB {
                     break outer;
             }
         }
-
         saveImage(image);
     }
 
@@ -309,5 +313,24 @@ public class LSB {
             input = "0" + input;
 
         return input;
+    }
+
+    /**
+     * Takes in a binary string and converts it to an ascii string
+     * @param binary    string of binary digits
+     * @return          A ascii string
+     */
+    private static String convertBinaryToAscii(String binary){
+        String ascii = "";
+
+        int index = 0;
+        while (index < binary.length()) {
+            String bite = binary.substring(index, Math.min(index + 8, binary.length()));
+            int charCode = Integer.parseInt(bite, 2);
+            String character = Character.toString((char)charCode);
+            ascii = ascii.concat(character);
+            index += 8;
+        }
+        return ascii;
     }
 }
