@@ -1,0 +1,9 @@
+1. Make a hashmap with keys of usernames and values of true if we'eve read there skin.
+Currently I am just setting a global boolean if we read one skin and thats it, this hashmap
+will let us read skins from multiple users.
+
+2. In the above hashmap, change the value of true to be a md5sum of their skin, so we can detect if the skin 
+has changed and read it again. 
+
+3. Make a command that the user can do like /send <message> that will call the LSB encoding to write that message to
+their skin and then upload that skin to minecraft for them.
