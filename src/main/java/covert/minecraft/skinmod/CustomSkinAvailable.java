@@ -57,13 +57,13 @@ public class CustomSkinAvailable implements SkinManager.SkinAvailableCallback{
 
         System.out.printf("Loaded skin to %s %n", LSB.ENCODED_IMAGE);
         System.out.println("Decoding");
-        String message = LSB.retrieveMessageFromImage();
+        String message = LSB.retrieveMessageFromImage(this.playerName);
         System.out.printf("Message received: %s %n", message);
         System.out.println("Done");
 
         minecraft.player.sendMessage(
                 new TextComponentString("Message received from " + this.playerName + " : " + message));
 
-        StegSkin.BEEN_READ = true;
+        StegSkin.userSkins.put(this.playerName, "");
     }
 }

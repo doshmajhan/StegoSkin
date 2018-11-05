@@ -8,7 +8,7 @@ public class MainTest {
         System.out.println("Done");
 
         System.out.println("Decoding message");
-        LSB.retrieveMessageFromImage();
+        LSB.retrieveMessageFromImage(LSB.TEST_USER);
         System.out.println("Done");
 
     }

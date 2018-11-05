@@ -41,6 +41,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -52,6 +53,7 @@ public class StegSkin {
     public static final String name = "StegSkin";
     public static final String version = "1.12.2";
     public static boolean BEEN_READ = false;
+    public static HashMap<String, String> userSkins = new HashMap<>();
 
     @Mod.Instance(modId)
     public static StegSkin instance;
@@ -73,7 +75,7 @@ public class StegSkin {
 
     @SubscribeEvent
     public void onPlayerRender(RenderPlayerEvent.Post event){
-        if (BEEN_READ) {
+        if (userSkins.containsKey(event.getEntityPlayer().getName())) {
             return;
         }
 

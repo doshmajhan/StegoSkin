@@ -9,12 +9,14 @@ import java.util.ArrayList;
 
 public class LSB {
 
-    public static final String ENCODED_IMAGE = "../encoded.png";
-    private static final String SKIN_PATH = "../skin.png";
-    private static final String DECODE_OUTPUT = "../decoded.txt";
+    public static final String ENCODED_IMAGE = "../%s_encoded.png";
+    private static final String SKIN_PATH = "../orig_skin.png";
+    private static final String MY_ENCODED_SKIN = "../my_skin_encoded.png";
+    private static final String DECODE_OUTPUT = "../%s_decoded.txt";
     private static final String MESSAGE_PATH = "../message.txt";
     private static final int MAX_MESSAGE_SIZE = 350;
     private static final String END_CHUNK_FLAG = "111111";
+    public static final String TEST_USER = "my_skin";
 
     public static void storeMessage() {
         String message = readFile(MESSAGE_PATH);
@@ -84,9 +86,12 @@ public class LSB {
      * of each Red, Green and Blue component of each pixel starting at the
      * top left of the picture. The retrieval process stops once the end block, which is
      * "111111" is encountered. The message is then saved to a text file.
+     *
+     * @param playerName    The name of the player we're reading the skin of
      */
-    public static String retrieveMessageFromImage() {
-        File file = new File(ENCODED_IMAGE);
+    public static String retrieveMessageFromImage(String playerName) {
+        String image_path = String.format(ENCODED_IMAGE, playerName);
+        File file = new File(image_path);
         BufferedImage image;
 
         try {
@@ -122,7 +127,7 @@ public class LSB {
         }
 
         retrievedMessage = convertBinaryToAscii(retrievedMessage);
-        saveText(retrievedMessage);
+        saveText(retrievedMessage, playerName);
         return retrievedMessage;
     }
 
@@ -269,7 +274,7 @@ public class LSB {
      */
     private static void saveImage(BufferedImage image) {
         try {
-            File output = new File(ENCODED_IMAGE);
+            File output = new File(MY_ENCODED_SKIN);
             ImageIO.write(image, "png", output);
             System.out.println("Saved output to: " + output.getAbsolutePath());
         } catch (IOException e) {
@@ -281,10 +286,12 @@ public class LSB {
     /**
      * Saves a String to a .txt file at the location of this program.
      * @param text              The String to be saved.
+     * @param playerName        The name of the player we got the message from
      */
-    private static void saveText(String text) {
+    private static void saveText(String text, String playerName) {
         try {
-            File output = new File(DECODE_OUTPUT);
+            String file_path = String.format(DECODE_OUTPUT, playerName);
+            File output = new File(file_path);
             FileOutputStream fos = new FileOutputStream(output);
 
             byte[] contentInBytes = text.getBytes();
