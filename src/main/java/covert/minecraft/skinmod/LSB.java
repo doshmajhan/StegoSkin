@@ -90,8 +90,8 @@ public class LSB {
      * @param playerName    The name of the player we're reading the skin of
      */
     public static String retrieveMessageFromImage(String playerName) {
-        String image_path = String.format(ENCODED_IMAGE, playerName);
-        File file = new File(image_path);
+        String imagePath = String.format(ENCODED_IMAGE, playerName);
+        File file = new File(imagePath);
         BufferedImage image;
 
         try {
@@ -290,8 +290,8 @@ public class LSB {
      */
     private static void saveText(String text, String playerName) {
         try {
-            String file_path = String.format(DECODE_OUTPUT, playerName);
-            File output = new File(file_path);
+            String filePath = String.format(DECODE_OUTPUT, playerName);
+            File output = new File(filePath);
             FileOutputStream fos = new FileOutputStream(output);
 
             byte[] contentInBytes = text.getBytes();

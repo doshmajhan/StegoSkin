@@ -9,9 +9,16 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import org.apache.commons.codec.digest.DigestUtils;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 
 public class CustomSkinAvailable implements SkinManager.SkinAvailableCallback{
@@ -27,9 +34,13 @@ public class CustomSkinAvailable implements SkinManager.SkinAvailableCallback{
                        MinecraftProfileTexture profileTexture){
 
         Minecraft minecraft = Minecraft.getMinecraft();
+        String imageSavePath = String.format(LSB.ENCODED_IMAGE, this.playerName);
+        String md5;
+
         System.out.println("Loading skin");
         System.out.println(profileTexture.getUrl());
 
+        // Get the image from the game
         try {
             TextureManager manager = minecraft.getTextureManager();
 
@@ -44,7 +55,7 @@ public class CustomSkinAvailable implements SkinManager.SkinAvailableCallback{
                 throw new Exception("skin is null");
             }
 
-            ImageIO.write(image, "png", new File(LSB.ENCODED_IMAGE));
+            ImageIO.write(image, "png", new File(imageSavePath));
         }
         catch (Exception e){
             System.out.printf("Error loading skin for: %s %n", location);
@@ -55,15 +66,39 @@ public class CustomSkinAvailable implements SkinManager.SkinAvailableCallback{
             return;
         }
 
-        System.out.printf("Loaded skin to %s %n", LSB.ENCODED_IMAGE);
+
+        System.out.printf("Loaded skin to %s %n", imageSavePath);
+
+        // Get md5 of image
+        try {
+            FileInputStream fis = new FileInputStream(new File(imageSavePath));
+            md5 = DigestUtils.md5Hex(fis);
+
+        } catch (IOException ex) {
+            System.out.println(ex.getMessage());
+            return;
+        }
+
+        // Check if md5 is the same
+        if (StegSkin.userSkins.containsKey(this.playerName)){
+            System.out.println("Skin already seen, checking for new message");
+            if (StegSkin.userSkins.get(this.playerName).equals(md5)){
+                System.out.println("No new message");
+                return;
+            }
+            System.out.println("New message detected");
+        }
+
         System.out.println("Decoding");
         String message = LSB.retrieveMessageFromImage(this.playerName);
         System.out.printf("Message received: %s %n", message);
         System.out.println("Done");
 
+        // Display message to user in game
         minecraft.player.sendMessage(
                 new TextComponentString("Message received from " + this.playerName + " : " + message));
 
-        StegSkin.userSkins.put(this.playerName, "");
+        // Update skins dictionary with new md5 hash
+        StegSkin.userSkins.put(this.playerName, md5);
     }
 }
