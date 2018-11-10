@@ -1,49 +1,21 @@
 package covert.minecraft.skinmod;
 
 import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.AbstractClientPlayer;
-import net.minecraft.client.entity.EntityOtherPlayerMP;
-import net.minecraft.client.network.NetworkPlayerInfo;
-import net.minecraft.client.renderer.ImageBufferDownload;
-import net.minecraft.client.renderer.ThreadDownloadImageData;
-import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.client.renderer.texture.SimpleTexture;
-import net.minecraft.client.renderer.texture.TextureUtil;
-import net.minecraft.client.renderer.tileentity.TileEntitySkullRenderer;
-import net.minecraft.client.resources.DefaultPlayerSkin;
-import net.minecraft.client.resources.IResource;
-import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.SkinManager;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.datafix.fixes.EntityId;
+import net.minecraft.util.text.ChatType;
+import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
-import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
-import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
-import org.apache.logging.log4j.Level;
-import com.mojang.authlib.minecraft.MinecraftProfileTexture.Type;
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
+import net.minecraftforge.fml.common.gameevent.PlayerEvent;
+
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
 
 
 @Mod(modid = StegSkin.modId, name = StegSkin.name, version = StegSkin.version, acceptedMinecraftVersions = "[1.12.2]", useMetadata = true, clientSideOnly = true)
@@ -52,8 +24,8 @@ public class StegSkin {
     public static final String modId = "stegskin";
     public static final String name = "StegSkin";
     public static final String version = "1.12.2";
-    public static boolean BEEN_READ = false;
     public static HashMap<String, String> userSkins = new HashMap<>();
+    public static HashMap<String, Boolean> usersRelogged = new HashMap<>();
 
     @Mod.Instance(modId)
     public static StegSkin instance;
@@ -74,9 +46,23 @@ public class StegSkin {
     }
 
     @SubscribeEvent
+    public void chatRecieved(ClientChatReceivedEvent event){
+        if (event.getType().equals(ChatType.SYSTEM)) {
+            String message = event.getMessage().getUnformattedText();
+            if (message.contains("left the game")) {
+                String[] splitted = message.split("\\s+");
+                String username = splitted[0];
+                usersRelogged.put(username, true);
+            }
+        }
+    }
+
+    @SubscribeEvent
     public void onPlayerRender(RenderPlayerEvent.Post event){
-        if (userSkins.containsKey(event.getEntityPlayer().getName())) {
-            return;
+        if (usersRelogged.containsKey(event.getEntityPlayer().getName())) {
+            if (!usersRelogged.get(event.getEntityPlayer().getName())) {
+                return;
+            }
         }
 
         Minecraft minecraft = Minecraft.getMinecraft();

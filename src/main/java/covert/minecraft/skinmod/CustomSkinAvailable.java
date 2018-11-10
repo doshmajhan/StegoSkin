@@ -81,9 +81,11 @@ public class CustomSkinAvailable implements SkinManager.SkinAvailableCallback{
 
         // Check if md5 is the same
         if (StegSkin.userSkins.containsKey(this.playerName)){
-            System.out.println("Skin already seen, checking for new message");
+            System.out.println("Player seen before, checking if new message");
             if (StegSkin.userSkins.get(this.playerName).equals(md5)){
-                System.out.println("No new message");
+                System.out.println("No new message seen");
+                // Update the users login status
+                StegSkin.usersRelogged.put(this.playerName, false);
                 return;
             }
             System.out.println("New message detected");
@@ -100,5 +102,8 @@ public class CustomSkinAvailable implements SkinManager.SkinAvailableCallback{
 
         // Update skins dictionary with new md5 hash
         StegSkin.userSkins.put(this.playerName, md5);
+
+        // Update the users login status
+        StegSkin.usersRelogged.put(this.playerName, false);
     }
 }
