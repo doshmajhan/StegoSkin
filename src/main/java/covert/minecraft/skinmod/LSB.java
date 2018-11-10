@@ -11,15 +11,14 @@ public class LSB {
 
     public static final String ENCODED_IMAGE = "../%s_encoded.png";
     private static final String SKIN_PATH = "../orig_skin.png";
-    private static final String MY_ENCODED_SKIN = "../my_skin_encoded.png";
+    public static final String MY_ENCODED_SKIN = "../my_skin_encoded.png";
     private static final String DECODE_OUTPUT = "../%s_decoded.txt";
     private static final String MESSAGE_PATH = "../message.txt";
     private static final int MAX_MESSAGE_SIZE = 350;
     private static final String END_CHUNK_FLAG = "111111";
     public static final String TEST_USER = "my_skin";
 
-    public static void storeMessage() {
-        String message = readFile(MESSAGE_PATH);
+    public static void storeMessage(String message) {
         if (message.length() > MAX_MESSAGE_SIZE) {
             System.out.println("Message is too big");
             return;
@@ -63,7 +62,7 @@ public class LSB {
      * @param input     the path to the input text file
      * @return          a String of the text of the input text file
      */
-    private static String readFile(String input) {
+    public static String readFile(String input) {
         try {
             FileReader fileReader = new FileReader(input);
             BufferedReader bufferedReader = new BufferedReader(fileReader);

@@ -2,17 +2,24 @@ package covert.minecraft.skinmod;
 
 import com.mojang.authlib.GameProfile;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.resources.SkinManager;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.text.ChatType;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
+import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
+import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
+import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 
 import java.util.HashMap;
 
@@ -26,6 +33,7 @@ public class StegSkin {
     public static final String version = "1.12.2";
     public static HashMap<String, String> userSkins = new HashMap<>();
     public static HashMap<String, Boolean> usersRelogged = new HashMap<>();
+    public static String skinLocation = "";
 
     @Mod.Instance(modId)
     public static StegSkin instance;
@@ -58,6 +66,18 @@ public class StegSkin {
     }
 
     @SubscribeEvent
+    public void login(EntityJoinWorldEvent event){
+        Entity ent = event.getEntity();
+        if (ent instanceof EntityPlayer) {
+            // Load the players game profile
+            GameProfile profile = ((EntityPlayer) ent).getGameProfile();
+            skinLocation = profile.getId().toString().replace("-", "");
+            System.out.println(skinLocation);
+        }
+    }
+
+
+    @SubscribeEvent
     public void onPlayerRender(RenderPlayerEvent.Post event){
         if (usersRelogged.containsKey(event.getEntityPlayer().getName())) {
             if (!usersRelogged.get(event.getEntityPlayer().getName())) {
@@ -79,4 +99,8 @@ public class StegSkin {
         skinManager.loadProfileTextures(profile, callback, false);
     }
 
+    public void setMessage(String message){
+        LSB.storeMessage(message);
+        UpdateSkinServer.updateSkin(LSB.MY_ENCODED_SKIN);
+    }
 }

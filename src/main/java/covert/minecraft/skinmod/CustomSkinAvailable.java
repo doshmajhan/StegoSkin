@@ -37,6 +37,8 @@ public class CustomSkinAvailable implements SkinManager.SkinAvailableCallback{
         String imageSavePath = String.format(LSB.ENCODED_IMAGE, this.playerName);
         String md5;
 
+        System.out.println(location);
+        System.out.println(profileTexture.getHash());
         System.out.println("Loading skin");
         System.out.println(profileTexture.getUrl());
 
