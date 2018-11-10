@@ -5,7 +5,7 @@ public class MainTest {
 
     public static void main(String args[]) {
 
-        /*System.out.println("Storing message");
+        System.out.println("Storing message");
         String message = LSB.readFile(MESSAGE_PATH);
         LSB.storeMessage(message);
         System.out.println("Done");
@@ -15,8 +15,8 @@ public class MainTest {
         System.out.println("Done");
 
         System.out.println("Updating skin");
-        UpdateSkinServer.updateSkin(LSB.MY_ENCODED_SKIN);
+        UpdateSkinServer.updateSkin();
         System.out.println("Done");
-        */
+
     }
 }

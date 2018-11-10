@@ -2,15 +2,13 @@ package covert.minecraft.skinmod;
 
 import com.mojang.authlib.GameProfile;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.resources.SkinManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.text.ChatType;
+import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
-import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
-import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -18,8 +16,6 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent;
-import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 
 import java.util.HashMap;
 
@@ -40,6 +36,7 @@ public class StegSkin {
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
+        ClientCommandHandler.instance.registerCommand(new UpdateSkinServer());
 
     }
 
@@ -101,6 +98,6 @@ public class StegSkin {
 
     public void setMessage(String message){
         LSB.storeMessage(message);
-        UpdateSkinServer.updateSkin(LSB.MY_ENCODED_SKIN);
+        UpdateSkinServer.updateSkin();
     }
 }
