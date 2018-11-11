@@ -3,6 +3,11 @@ package covert.minecraft.skinmod;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 
 class StegoDecoding {
@@ -74,18 +79,19 @@ class StegoDecoding {
      * @param playerName        The name of the player we got the message from
      */
     private static void saveText(String text, String playerName) {
-        try {
-            String filePath = String.format(DECODE_OUTPUT_TEMPLATE, playerName);
-            File output = new File(filePath);
-            FileOutputStream fos = new FileOutputStream(output);
+        Path filePath = Paths.get(String.format(DECODE_OUTPUT_TEMPLATE, playerName));
 
-            byte[] contentInBytes = text.getBytes();
+        try (BufferedWriter writer = Files.newBufferedWriter(
+                filePath,
+                Charset.defaultCharset(),
+                StandardOpenOption.CREATE,
+                StandardOpenOption.APPEND)) {
 
-            fos.write(contentInBytes);
-            fos.flush();
-            fos.close();
+            writer.append(text);
+            writer.newLine();
+            writer.flush();
 
-            System.out.println("Saved output to: " + output.getAbsolutePath());
+            System.out.println("Saved output to: " + filePath.toAbsolutePath());
 
         } catch (FileNotFoundException e) {
             System.err.println("Could not create output text. Check program writing permissions.");
