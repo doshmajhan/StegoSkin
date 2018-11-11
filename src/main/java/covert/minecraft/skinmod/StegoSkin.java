@@ -34,7 +34,7 @@ public class StegoSkin {
     public static HashMap<String, Boolean> usersRelogged = new HashMap<>();
     public static String playerUUID = "";
     public static String skinPath= "../config/%s_skin.png";
-    public static final String encodedSkin = "../config/%s_encoded_skin.png";
+    public static String encodedSkinPath = "../config/%s_encoded_skin.png";
 
 
 
@@ -75,6 +75,8 @@ public class StegoSkin {
 
             // Store there UUID to be used later to update skin
             playerUUID = profile.getId().toString().replace("-", "");
+            skinPath = String.format(skinPath, ent.getName());
+            encodedSkinPath = String.format(encodedSkinPath, ent.getName());
         }
     }
 

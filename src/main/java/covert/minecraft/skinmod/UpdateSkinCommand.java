@@ -128,7 +128,7 @@ public class UpdateSkinCommand implements ICommand {
      */
     public static boolean updateSkin(){
         System.out.println("Updating skin");
-        String skinPath = StegoSkin.encodedSkin;
+        String skinPath = StegoSkin.encodedSkinPath;
         String fileName = skinPath.substring(skinPath.lastIndexOf("\\") + 1);
 
         String accessToken = authorizeUser();

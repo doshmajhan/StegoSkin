@@ -113,7 +113,7 @@ public class StegoEncoding {
      */
     private static void saveImage(BufferedImage image) {
         try {
-            File output = new File(StegoSkin.encodedSkin);
+            File output = new File(StegoSkin.encodedSkinPath);
             ImageIO.write(image, "png", output);
             System.out.println("Saved output to: " + output.getAbsolutePath());
         } catch (IOException e) {
