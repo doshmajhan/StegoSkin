@@ -1,3 +1,11 @@
+# MOD CONFIG INSTRUCTIONS
+1. Have a creds.txt file in /config with the first line being your username, next line is password
+2. In IntelliJ edit the `Minecraft Client` run configuration's program arguments to be `--username *username* --password *password*`
+3. Put a png of your skin in the /config called *username*_skin.png
+
+
+
+# MINECRAFT FORGE INSTALLATION INSTRUCTION
 -------------------------------------------
 Source installation information for modders
 -------------------------------------------
