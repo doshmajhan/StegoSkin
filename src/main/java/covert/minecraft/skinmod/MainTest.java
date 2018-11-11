@@ -16,10 +16,5 @@ public class MainTest {
         String message = StegoDecoding.retrieveMessageFromImage(TEST_USER);
         System.out.printf("Message recieved: %s %n", message);
         System.out.println("Done");
-
-        //System.out.println("Updating skin");
-        //UpdateSkinCommand.updateSkin();
-        //System.out.println("Done");
-
     }
 }

@@ -5,7 +5,7 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.ArrayList;
 
-public class StegoDecoding {
+class StegoDecoding {
 
     private static final String DECODE_OUTPUT_TEMPLATE = "../config/%s_decoded.txt";
 
@@ -17,7 +17,7 @@ public class StegoDecoding {
      *
      * @param playerName    The name of the player we're reading the skin of
      */
-    public static String retrieveMessageFromImage(String playerName) {
+    static String retrieveMessageFromImage(String playerName) {
         String imagePath = String.format(StegoHelper.ENCODED_IMAGE_TEMPLATE, playerName);
         BufferedImage image = StegoHelper.loadImage(imagePath);
         String retrievedMessage = "";

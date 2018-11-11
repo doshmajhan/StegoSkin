@@ -1,6 +1,7 @@
 package covert.minecraft.skinmod;
 
 import com.google.common.collect.Lists;
+import com.google.gson.internal.LinkedTreeMap;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
@@ -28,6 +29,12 @@ public class UpdateSkinCommand implements ICommand {
     private static final String AUTH_URL = "https://authserver.mojang.com/authenticate";
     private static final String SKIN_UPLOAD_URL = "https://api.mojang.com/user/profile/%s/skin";
     private static final String CREDS_FILE = "../config/creds.txt";
+    private HttpClient client;
+
+    UpdateSkinCommand(){
+        super();
+        this.client = HttpClients.createDefault();
+    }
 
     @Override
     public int compareTo(ICommand arg0) {
@@ -78,28 +85,53 @@ public class UpdateSkinCommand implements ICommand {
         return false;
     }
 
+
+    /**
+     * Makes a request to update the skin with our newly encoded skin store in the skin path provided
+     *
+     * @return true if successful, false if not
+     */
+    private boolean updateSkin(){
+        System.out.println("Updating skin");
+        String skinPath = StegoSkin.encodedSkinPath;
+        String fileName = skinPath.substring(skinPath.lastIndexOf("\\") + 1);
+        String accessToken = this.authorizeUser();
+
+        if (accessToken == null) {
+            System.out.println("Issue creating auth string");
+            return false;
+        }
+
+        HttpEntity httpEntity = MultipartEntityBuilder.create()
+                .addTextBody("model", "classic")
+                .addBinaryBody(
+                        "file",
+                        new File(skinPath),
+                        ContentType.create("image/png"),
+                        fileName)
+                .build();
+
+        HttpPut put = new HttpPut(String.format(SKIN_UPLOAD_URL, StegoSkin.playerUUID));
+        put.addHeader("authorization", "Bearer " + accessToken);
+        put.setEntity(httpEntity);
+
+        try {
+            HttpResponse resp = this.client.execute(put);
+            return resp.getStatusLine().getStatusCode() == 204;
+        } catch (IOException ex) {
+            System.out.println(ex.getMessage());
+            return false;
+        }
+    }
+
     /**
      * Authorizes our user usings credentials stored in the CREDS_FILE
      * and returns the authorization token as a result
      * @return authorization token for user
      */
-    public static String authorizeUser(){
+    private String authorizeUser(){
         System.out.println("Authorizing");
-
-        List<String> creds;
-        try {
-            creds = Files.readAllLines(Paths.get(CREDS_FILE));
-        } catch (IOException ex) {
-            System.out.println(ex.getMessage());
-            return "";
-        }
-
-        HttpClient client = HttpClients.createDefault();
-
-        String authTemplate = "{\"username\": \"%s\", \"password\": \"%s\", \"captchaSupported\": \"%s\", \"requestUser\": \"%b\" }";
-        String json = String.format(authTemplate, creds.get(0), creds.get(1), "None", true);
-        StringEntity requestEntity = new StringEntity(json, ContentType.APPLICATION_JSON);
-        requestEntity.setChunked(true);
+        StringEntity requestEntity = getAuthString();
 
         HttpPost post = new HttpPost(AUTH_URL);
         post.addHeader("content-type", "application/json;charset=UTF-8");
@@ -107,53 +139,48 @@ public class UpdateSkinCommand implements ICommand {
 
         String response;
         try {
-            HttpResponse resp = client.execute(post);
+            HttpResponse resp = this.client.execute(post);
             HttpEntity respEntity = resp.getEntity();
             response = EntityUtils.toString(respEntity);
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
-            return "";
+            return null;
         }
 
         Gson g = new Gson();
-        ServerResponseTemplate user = g.fromJson(response, ServerResponseTemplate.class);
+        LinkedTreeMap userMap = g.fromJson(response, LinkedTreeMap.class);
 
-        return user.accessToken;
+        return userMap.get("accessToken").toString();
     }
 
     /**
-     * Makes a request to update the skin with our newly encoded skin store in the skin path provided
+     * Reads in the creds from creds.txt and creates a json string to auth our user with
      *
-     * @return true if successful, false if not
+     * @return json string containing auth credentials
      */
-    public static boolean updateSkin(){
-        System.out.println("Updating skin");
-        String skinPath = StegoSkin.encodedSkinPath;
-        String fileName = skinPath.substring(skinPath.lastIndexOf("\\") + 1);
-
-        String accessToken = authorizeUser();
-        HttpClient client = HttpClients.createDefault();
-
-        HttpPut put = new HttpPut(String.format(SKIN_UPLOAD_URL, StegoSkin.playerUUID));
-        put.addHeader("authorization", "Bearer " + accessToken);
-
-        HttpEntity httpEntity = MultipartEntityBuilder.create()
-                .addTextBody("model", "classic")
-                .addBinaryBody("file", new File(skinPath), ContentType.create("image/png"), fileName)
-                .build();
-
-        put.setEntity(httpEntity);
-
+    private static StringEntity getAuthString() {
+        List<String> creds;
         try {
-            HttpResponse resp = client.execute(put);
-            System.out.println(resp.getStatusLine().getStatusCode());
-            if (resp.getStatusLine().getStatusCode() == 204) {
-                return true;
-            }
-            return false;
+            creds = Files.readAllLines(Paths.get(CREDS_FILE));
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
-            return false;
+            System.out.println("Couldn't read creds.txt");
+            return null;
         }
+
+        String authTemplate =
+                "{\"username\": \"%s\", \"password\": \"%s\", \"captchaSupported\": \"%s\", \"requestUser\": \"%b\" }";
+
+        String json = String.format(
+                authTemplate,
+                creds.get(0),
+                creds.get(1),
+                "None",
+                true);
+
+        StringEntity requestEntity = new StringEntity(json, ContentType.APPLICATION_JSON);
+        requestEntity.setChunked(true);
+
+        return requestEntity;
     }
 }

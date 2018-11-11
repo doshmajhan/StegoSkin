@@ -6,11 +6,11 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.ArrayList;
 
-public class StegoEncoding {
+class StegoEncoding {
 
     private static final int MAX_MESSAGE_SIZE = 350;
 
-    public static void storeMessage(String message) {
+    static void storeMessage(String message) {
         if (message.length() > MAX_MESSAGE_SIZE) {
             System.out.println("Message is too big");
             return;

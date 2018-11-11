@@ -8,8 +8,8 @@ import java.util.ArrayList;
 
 public class StegoHelper {
 
-    public static final String ENCODED_IMAGE_TEMPLATE = "../config/%s_encoded_skin.png";
-    public static final String END_CHUNK_FLAG = "111111";
+    static final String ENCODED_IMAGE_TEMPLATE = "../config/%s_encoded_skin.png";
+    static final String END_CHUNK_FLAG = "111111";
 
     /**
      * Loads an image from the given input path.
@@ -20,7 +20,7 @@ public class StegoHelper {
      * @param input     path to image
      * @return          BufferedImage of image
      */
-    public static BufferedImage loadImage(String input) {
+    static BufferedImage loadImage(String input) {
         try {
             File file = new File(input);
             BufferedImage in = ImageIO.read(file);
@@ -45,7 +45,7 @@ public class StegoHelper {
      * @param color     The color which color components are wanted.
      * @return          An ArrayList of Strings containing the color component values as binaries.
      */
-    public static ArrayList<String> getColorBinaries(Color color) {
+    static ArrayList<String> getColorBinaries(Color color) {
         ArrayList<String> out = new ArrayList<>();
         out.add(intToBinaryString(color.getRed()));
         out.add(intToBinaryString(color.getGreen()));
@@ -60,7 +60,7 @@ public class StegoHelper {
      * @param input     The Integer to be converted.
      * @return          A String containing the binary value of the input Integer.
      */
-    public static String intToBinaryString(int input) {
+    static String intToBinaryString(int input) {
         return fillString(Integer.toBinaryString(input));
     }
 
