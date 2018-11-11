@@ -1,6 +1,6 @@
 # MOD CONFIG INSTRUCTIONS
 1. Have a creds.txt file in /config with the first line being your username, next line is password
-2. In IntelliJ add `--username`*`username`*`--password`*`password`*`` to the `Minecraft Client` program arguments
+2. In IntelliJ add `--username`*`username`*`--password`*`password`* to the `Minecraft Client` program arguments
 3. Put a png of your skin in the /config called *username*_skin.png
 
 
