@@ -24,11 +24,10 @@ import java.nio.file.Paths;
 import java.util.*;
 
 
-public class UpdateSkinServer implements ICommand {
+public class UpdateSkinCommand implements ICommand {
     private static final String AUTH_URL = "https://authserver.mojang.com/authenticate";
     private static final String SKIN_UPLOAD_URL = "https://api.mojang.com/user/profile/%s/skin";
-    private static final String CREDS_FILE = "../creds.txt";
-    private static String AUTH_TEMPLATE = "{\"username\": \"%s\", \"password\": \"%s\", \"captchaSupported\": \"%s\", \"requestUser\": \"%b\" }";
+    private static final String CREDS_FILE = "../config/creds.txt";
 
     @Override
     public int compareTo(ICommand arg0) {
@@ -51,7 +50,7 @@ public class UpdateSkinServer implements ICommand {
             return;
         }
         String message = args[0];
-        LSB.storeMessage(message);
+        StegoEncoding.storeMessage(message);
         boolean result = updateSkin();
         System.out.println(result);
     }
@@ -86,6 +85,7 @@ public class UpdateSkinServer implements ICommand {
      */
     public static String authorizeUser(){
         System.out.println("Authorizing");
+
         List<String> creds;
         try {
             creds = Files.readAllLines(Paths.get(CREDS_FILE));
@@ -96,7 +96,8 @@ public class UpdateSkinServer implements ICommand {
 
         HttpClient client = HttpClients.createDefault();
 
-        String json = String.format(AUTH_TEMPLATE, creds.get(0), creds.get(1), "None", true);
+        String authTemplate = "{\"username\": \"%s\", \"password\": \"%s\", \"captchaSupported\": \"%s\", \"requestUser\": \"%b\" }";
+        String json = String.format(authTemplate, creds.get(0), creds.get(1), "None", true);
         StringEntity requestEntity = new StringEntity(json, ContentType.APPLICATION_JSON);
         requestEntity.setChunked(true);
 
@@ -115,7 +116,7 @@ public class UpdateSkinServer implements ICommand {
         }
 
         Gson g = new Gson();
-        ServerResponse user = g.fromJson(response, ServerResponse.class);
+        ServerResponseTemplate user = g.fromJson(response, ServerResponseTemplate.class);
 
         return user.accessToken;
     }
@@ -127,13 +128,13 @@ public class UpdateSkinServer implements ICommand {
      */
     public static boolean updateSkin(){
         System.out.println("Updating skin");
-        String skinPath = LSB.MY_ENCODED_SKIN;
+        String skinPath = StegoSkin.encodedSkin;
         String fileName = skinPath.substring(skinPath.lastIndexOf("\\") + 1);
 
         String accessToken = authorizeUser();
         HttpClient client = HttpClients.createDefault();
 
-        HttpPut put = new HttpPut(String.format(SKIN_UPLOAD_URL, StegSkin.skinLocation));
+        HttpPut put = new HttpPut(String.format(SKIN_UPLOAD_URL, StegoSkin.playerUUID));
         put.addHeader("authorization", "Bearer " + accessToken);
 
         HttpEntity httpEntity = MultipartEntityBuilder.create()
@@ -142,6 +143,7 @@ public class UpdateSkinServer implements ICommand {
                 .build();
 
         put.setEntity(httpEntity);
+
         try {
             HttpResponse resp = client.execute(put);
             System.out.println(resp.getStatusLine().getStatusCode());

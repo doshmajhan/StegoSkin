@@ -21,3 +21,5 @@ build
 eclipse
 run
 creds.txt
+*_decoded.txt
+*_encoded_skin.png

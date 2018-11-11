@@ -21,23 +21,29 @@ import java.util.HashMap;
 
 
 
-@Mod(modid = StegSkin.modId, name = StegSkin.name, version = StegSkin.version, acceptedMinecraftVersions = "[1.12.2]", useMetadata = true, clientSideOnly = true)
-public class StegSkin {
+@Mod(modid = StegoSkin.modId, name = StegoSkin.name, version = StegoSkin.version, acceptedMinecraftVersions = "[1.12.2]", useMetadata = true, clientSideOnly = true)
+public class StegoSkin {
 
+    // Constants
     public static final String modId = "stegskin";
-    public static final String name = "StegSkin";
+    public static final String name = "StegoSkin";
     public static final String version = "1.12.2";
+
+    // Global Variables
     public static HashMap<String, String> userSkins = new HashMap<>();
     public static HashMap<String, Boolean> usersRelogged = new HashMap<>();
-    public static String skinLocation = "";
+    public static String playerUUID = "";
+    public static String skinPath= "../config/%s_skin.png";
+    public static final String encodedSkin = "../config/%s_encoded_skin.png";
+
+
 
     @Mod.Instance(modId)
-    public static StegSkin instance;
+    public static StegoSkin instance;
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-        ClientCommandHandler.instance.registerCommand(new UpdateSkinServer());
-
+        ClientCommandHandler.instance.registerCommand(new UpdateSkinCommand());
     }
 
     @Mod.EventHandler
@@ -46,9 +52,7 @@ public class StegSkin {
     }
 
     @Mod.EventHandler
-    public void postInit(FMLPostInitializationEvent event) {
-
-    }
+    public void postInit(FMLPostInitializationEvent event) { }
 
     @SubscribeEvent
     public void chatRecieved(ClientChatReceivedEvent event){
@@ -68,8 +72,9 @@ public class StegSkin {
         if (ent instanceof EntityPlayer) {
             // Load the players game profile
             GameProfile profile = ((EntityPlayer) ent).getGameProfile();
-            skinLocation = profile.getId().toString().replace("-", "");
-            System.out.println(skinLocation);
+
+            // Store there UUID to be used later to update skin
+            playerUUID = profile.getId().toString().replace("-", "");
         }
     }
 
@@ -90,14 +95,9 @@ public class StegSkin {
 
 
         // This is a function that will be called once the skin has been downloaded and cached
-        CustomSkinAvailable callback = new CustomSkinAvailable(event.getEntityPlayer().getName());
+        CustomSkinAvailableCallback callback = new CustomSkinAvailableCallback(event.getEntityPlayer().getName());
 
         // Force the skin manager to load the skins for this profile
         skinManager.loadProfileTextures(profile, callback, false);
-    }
-
-    public void setMessage(String message){
-        LSB.storeMessage(message);
-        UpdateSkinServer.updateSkin();
     }
 }

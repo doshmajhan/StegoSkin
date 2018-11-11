@@ -15,11 +15,11 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 
 
-public class CustomSkinAvailable implements SkinManager.SkinAvailableCallback{
+public class CustomSkinAvailableCallback implements SkinManager.SkinAvailableCallback{
 
     private String playerName;
 
-    public CustomSkinAvailable(String playerName){
+    public CustomSkinAvailableCallback(String playerName){
         this.playerName = playerName;
     }
 
@@ -28,7 +28,7 @@ public class CustomSkinAvailable implements SkinManager.SkinAvailableCallback{
                        MinecraftProfileTexture profileTexture){
 
         Minecraft minecraft = Minecraft.getMinecraft();
-        String imageSavePath = String.format(LSB.ENCODED_IMAGE, this.playerName);
+        String imageSavePath = String.format(StegoHelper.ENCODED_IMAGE_TEMPLATE, this.playerName);
         String md5;
 
         System.out.println(location);
@@ -76,19 +76,19 @@ public class CustomSkinAvailable implements SkinManager.SkinAvailableCallback{
         }
 
         // Check if md5 is the same
-        if (StegSkin.userSkins.containsKey(this.playerName)){
+        if (StegoSkin.userSkins.containsKey(this.playerName)){
             System.out.println("Player seen before, checking if new message");
-            if (StegSkin.userSkins.get(this.playerName).equals(md5)){
+            if (StegoSkin.userSkins.get(this.playerName).equals(md5)){
                 System.out.println("No new message seen");
                 // Update the users login status
-                StegSkin.usersRelogged.put(this.playerName, false);
+                StegoSkin.usersRelogged.put(this.playerName, false);
                 return;
             }
             System.out.println("New message detected");
         }
 
         System.out.println("Decoding");
-        String message = LSB.retrieveMessageFromImage(this.playerName);
+        String message = StegoDecoding.retrieveMessageFromImage(this.playerName);
         System.out.printf("Message received: %s %n", message);
         System.out.println("Done");
 
@@ -97,9 +97,9 @@ public class CustomSkinAvailable implements SkinManager.SkinAvailableCallback{
                 new TextComponentString("Message received from " + this.playerName + " : " + message));
 
         // Update skins dictionary with new md5 hash
-        StegSkin.userSkins.put(this.playerName, md5);
+        StegoSkin.userSkins.put(this.playerName, md5);
 
         // Update the users login status
-        StegSkin.usersRelogged.put(this.playerName, false);
+        StegoSkin.usersRelogged.put(this.playerName, false);
     }
 }
