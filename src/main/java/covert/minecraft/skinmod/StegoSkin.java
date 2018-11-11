@@ -68,6 +68,11 @@ public class StegoSkin {
 
     @SubscribeEvent
     public void login(EntityJoinWorldEvent event){
+
+        if (!playerUUID.equals("")) {
+            return;
+        }
+
         Entity ent = event.getEntity();
         if (ent instanceof EntityPlayer) {
             // Load the players game profile
