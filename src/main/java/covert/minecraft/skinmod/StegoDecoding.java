@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.text.Normalizer;
 
 class StegoDecoding {
 
@@ -50,6 +51,9 @@ class StegoDecoding {
         }
 
         retrievedMessage = convertBinaryToAscii(retrievedMessage);
+
+        // Clean up the string, keeping alphanumeric characters and spaces
+        retrievedMessage = retrievedMessage.replaceAll("[^A-Za-z0-9\\s]", "");
 
         // Save message to text file incase they want for later
         saveText(retrievedMessage, playerName);

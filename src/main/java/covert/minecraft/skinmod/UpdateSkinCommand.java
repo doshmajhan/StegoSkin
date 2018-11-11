@@ -53,13 +53,19 @@ public class UpdateSkinCommand implements ICommand {
 
     @Override
     public void execute(MinecraftServer server, ICommandSender icommandsender, String[] args) {
-        if (args.length != 1) {
+        if (args.length < 1) {
             return;
         }
-        String message = args[0];
+
+        String message = String.join(" ", args);
         StegoEncoding.storeMessage(message);
-        boolean result = updateSkin();
-        System.out.println(result);
+        boolean success = updateSkin();
+        if (success) {
+            System.out.println("Successfully updated skin");
+        }
+        else {
+            System.out.println("Failed to update skin");
+        }
     }
 
     @Override
